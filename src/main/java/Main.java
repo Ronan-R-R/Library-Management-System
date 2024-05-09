@@ -1,57 +1,79 @@
+//todo comments
+//todo complete notification system, make system display separately and not with main menu
+//todo refill-in members and books
 import java.util.*;
+import java.io.*;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.regex.*;
 
-// Private static fields to store books, members, and scanner object
 public class Main {
     private static List<Book> books = new ArrayList<>();
     private static List<Member> members = new ArrayList<>();
     private static Scanner scanner = new Scanner(System.in);
 
-    // Main method: Start of the program
     public static void main(String[] args) {
-        // Add sample data to books and members lists
-        addSampleData();
-        // Display the main menu
+        loadData(); // Load data from files
+        displayOverdueBooks(); // Check for overdue books on first boot
         displayMenu();
+        saveData(); // Save data to files before exiting
     }
 
-    // Method to add sample data to the books and members lists
-    private static void addSampleData() {
-        // Adding sample books
-        books.add(new Book("To Kill a Mockingbird", "Harper Lee", "9780061120084"));
-        books.add(new Book("1984", "George Orwell", "9780451524935"));
-        books.add(new Book("The Great Gatsby", "F. Scott Fitzgerald", "9780743273565"));
-        books.add(new Book("Pride and Prejudice", "Jane Austen", "9780141439518"));
-        books.add(new Book("The Catcher in the Rye", "J.D. Salinger", "9780316769488"));
+    private static final String DATA_DIR = "./data/";
 
-        // Adding sample members
-        members.add(new Member("Alice Johnson", "alice@gmail.com"));
-        members.add(new Member("Bob Smith", "bob@gmail.com"));
-        members.add(new Member("Charlie Brown", "charlie@gmail.com"));
+    private static void loadData() {
+        try (ObjectInputStream bookInput = new ObjectInputStream(new FileInputStream(DATA_DIR + "books.dat"));
+             ObjectInputStream memberInput = new ObjectInputStream(new FileInputStream(DATA_DIR + "members.dat"))) {
+            books = (List<Book>) bookInput.readObject();
+            members = (List<Member>) memberInput.readObject();
+            System.out.println("Data loaded successfully.");
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Error loading data: " + e.getMessage());
+        }
     }
 
-    // Method to display the main menu and handle user input
+    private static void saveData() {
+        File dataDirectory = new File(DATA_DIR);
+        if (!dataDirectory.exists()) {
+            if (!dataDirectory.mkdirs()) {
+                System.out.println("Error creating data directory.");
+                return;
+            }
+        }
+
+        try (ObjectOutputStream bookOutput = new ObjectOutputStream(new FileOutputStream(DATA_DIR + "books.dat"));
+             ObjectOutputStream memberOutput = new ObjectOutputStream(new FileOutputStream(DATA_DIR + "members.dat"))) {
+            bookOutput.writeObject(books);
+            memberOutput.writeObject(members);
+            System.out.println("Data saved successfully.");
+        } catch (IOException e) {
+            System.out.println("Error saving data: " + e.getMessage());
+        }
+    }
+
     private static void displayMenu() {
-        // Variable to store user's choice
-        int choice;
+        int choice = -1; // Initialize choice to a default value
         do {
-            // Display the main menu options
-            System.out.println("\nLibrary Management System Menu:");
-            System.out.println("==============================");
-            System.out.println("1. Add a new book");
-            System.out.println("2. Add a new member");
-            System.out.println("3. Search for a book");
-            System.out.println("4. Check out a book");
-            System.out.println("5. Return a book");
-            System.out.println("6. View Members");
-            System.out.println("7. View Books");
-            System.out.println("8. Exit");
-            System.out.println("==============================");
-            System.out.print("Enter your choice: ");
-            choice = scanner.nextInt();
-            scanner.nextLine(); // Consume newline character
-
             try {
+                System.out.println("\nLibrary Management System Menu:");
+                System.out.println("==============================");
+                System.out.println("1. Add a new book");
+                System.out.println("2. Add a new member");
+                System.out.println("3. Search for a book");
+                System.out.println("4. Check out a book");
+                System.out.println("5. Return a book");
+                System.out.println("6. View Members");
+                System.out.println("7. View Books");
+                System.out.println("8. Manually Change Due Date (For Testing)");
+                System.out.println("9. View Overdue and Due Books");
+                System.out.println("0. Exit");
+                System.out.println("==============================");
+                System.out.print("Enter your choice: ");
+                choice = scanner.nextInt();
+                scanner.nextLine(); // Consume newline character
+
                 switch (choice) {
+                    // Handle each menu option
                     case 1:
                         addNewBook();
                         break;
@@ -74,10 +96,26 @@ public class Main {
                         viewBooks();
                         break;
                     case 8:
+                        manuallyChangeDueDate();
+                        break;
+                    case 9:
+                        viewOverdueAndDueBooks();
+                        break;
+                    case 0:
                         System.out.println("Exiting the program. Thank you!");
-                        return; // Exit the program
+                        break; // Exit the program
                     default:
-                        throw new IllegalArgumentException("Invalid choice. Please try again.");
+                        System.out.println("Error: Invalid choice. Please try again.");
+                }
+
+                // Prompt for continue or exit
+                if (choice != 0) {
+                    System.out.println("==============================");
+                    System.out.println("Continue (1) | Exit (0)");
+                    System.out.println("==============================");
+                    System.out.print("Enter your choice: ");
+                    choice = scanner.nextInt();
+                    scanner.nextLine(); // Consume newline character
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Error: Invalid input. Please enter a number.");
@@ -85,26 +123,9 @@ public class Main {
             } catch (IllegalArgumentException e) {
                 System.out.println("Error: " + e.getMessage());
             }
-
-            // Prompt user to return to the main menu or exit
-            int option;
-            do {
-                System.out.print("Press 0 to return to the main menu, or 1 to exit: ");
-                option = scanner.nextInt();
-                scanner.nextLine(); // Consume newline character
-                if (option != 0 && option != 1) {
-                    System.out.println("Error: Invalid option. Please try again.");
-                }
-            } while (option != 0 && option != 1);
-
-            if (option == 1) {
-                System.out.println("Exiting the program. Thank you!");
-                return; // Exit the program
-            }
-        } while (true); // Continue looping until user chooses to exit
+        } while (choice == 1); // Continue looping if choice is 1
     }
 
-    // Method to add a new member to the library
     private static void addNewBook() {
         System.out.print("Enter book title: ");
         String title = scanner.nextLine();
@@ -113,7 +134,6 @@ public class Main {
         System.out.print("Enter ISBN: ");
         String ISBN = scanner.nextLine();
 
-        // Input validation
         assert !title.isEmpty() : "Title cannot be empty";
         assert !author.isEmpty() : "Author name cannot be empty";
         assert isValidISBN(ISBN) : "Invalid ISBN format";
@@ -123,14 +143,12 @@ public class Main {
         System.out.println("Book added successfully.");
     }
 
-    // Method to add a new member to the library
     private static void addNewMember() {
         System.out.print("Enter member name: ");
         String name = scanner.nextLine();
         System.out.print("Enter member email: ");
         String email = scanner.nextLine();
 
-        // Input validation
         assert !name.isEmpty() : "Name cannot be empty";
         assert isValidEmail(email) : "Invalid email format";
 
@@ -143,7 +161,6 @@ public class Main {
         }
     }
 
-    // Method to search for books in the library
     private static void searchForBook() {
         System.out.print("Enter search query (title or author): ");
         String query = scanner.nextLine().toLowerCase();
@@ -164,11 +181,13 @@ public class Main {
                 System.out.println(book.getTitle() + " by " + book.getAuthor());
                 System.out.println("ISBN: " + book.getISBN());
                 System.out.println("Status: " + (book.isAvailable() ? "Available" : "Checked Out"));
+                if (!book.isAvailable()) {
+                    System.out.println("Due Date: " + book.getDueDate());
+                }
             }
         }
     }
 
-    // Method to check out a book from the library
     private static void checkOutBook() {
         System.out.print("Enter member name: ");
         String memberName = scanner.nextLine();
@@ -179,72 +198,127 @@ public class Main {
         Book book = findBookByTitle(bookTitle);
 
         if (member == null || book == null) {
-            System.out.println("Member or book not found.");
+            System.out.println("Error: Member or book not found.");
             return;
         }
 
         try {
             member.borrowBook(book);
+            book.setBorrower(member);
             System.out.println("Book checked out successfully.");
         } catch (IllegalStateException e) {
             System.out.println("Error: " + e.getMessage());
         }
     }
 
-    // Method to return a book to the library
     private static void returnBook() {
-        System.out.print("Enter member name: ");
-        String memberName = scanner.nextLine();
         System.out.print("Enter book title: ");
         String bookTitle = scanner.nextLine();
 
-        Member member = findMemberByName(memberName);
         Book book = findBookByTitle(bookTitle);
 
-        if (member == null || book == null) {
-            System.out.println("Member or book not found.");
+        if (book == null) {
+            System.out.println("Error: Book not found.");
             return;
         }
 
-        try {
-            member.returnBook(book);
+        Member borrower = book.getBorrower();
+        if (borrower != null) {
+            borrower.returnBook(book);
+            book.setBorrower(null);
             System.out.println("Book returned successfully.");
-        } catch (IllegalStateException e) {
-            System.out.println("Error: " + e.getMessage());
+        } else {
+            System.out.println("Error: Book is not checked out.");
         }
     }
 
-    // Method to view a list of all members in the library
     private static void viewMembers() {
-        System.out.println("\nMembers:");
-        for (Member member : members) {
-            System.out.println("------------------------------");
-            System.out.println("- Name: " + member.getName());
-            System.out.println("- Email: " + member.getEmail());
-            List<Book> borrowedBooks = member.getBorrowedBooks();
-            if (!borrowedBooks.isEmpty()) {
-                System.out.println("- Booked Books:");
-                for (Book book : borrowedBooks) {
-                    System.out.println("    - " + book.getTitle());
-                }
-            } else {
-                System.out.println("- No books booked out.");
+        System.out.println("Members:");
+        if (members.isEmpty()) {
+            System.out.println("No members found.");
+        } else {
+            for (Member member : members) {
+                System.out.println("------------------------------");
+                System.out.println("Name: " + member.getName());
+                System.out.println("Email: " + member.getEmail());
+                System.out.println("Borrowed Books: " + member.getBorrowedBooks().size());
             }
         }
     }
 
-    // Method to view a list of all books in the library
     private static void viewBooks() {
-        System.out.println("\nBooks:");
-        for (Book book : books) {
-            System.out.println("------------------------------");
-            System.out.println("- " + book.getTitle() + " by " + book.getAuthor());
-            System.out.println("- ISBN: " + book.getISBN());
-            System.out.println("- Status: " + (book.isAvailable() ? "Available" : "Checked Out"));
+        System.out.println("Books:");
+        if (books.isEmpty()) {
+            System.out.println("No books found.");
+        } else {
+            for (Book book : books) {
+                System.out.println("------------------------------");
+                System.out.println("Title: " + book.getTitle());
+                System.out.println("Author: " + book.getAuthor());
+                System.out.println("ISBN: " + book.getISBN());
+                System.out.println("Status: " + (book.isAvailable() ? "Available" : "Checked Out"));
+                if (!book.isAvailable()) {
+                    System.out.println("Due Date: " + book.getDueDate());
+                }
+            }
         }
     }
 
-    // Method to find a member by name in the members list
+    private static void manuallyChangeDueDate() {
+        System.out.print("Enter book title: ");
+        String bookTitle = scanner.nextLine();
+
+        Book book = findBookByTitle(bookTitle);
+        if (book == null) {
+            System.out.println("Error: Book not found.");
+            return;
+        }
+
+        System.out.print("Enter new due date (yyyy-MM-dd): ");
+        String dateString = scanner.nextLine();
+        LocalDate newDueDate = LocalDate.parse(dateString);
+
+        book.setDueDate(newDueDate);
+        System.out.println("Due date updated successfully.");
+    }
+
+    private static void viewOverdueAndDueBooks() {
+        System.out.println("Overdue and Due Books:");
+        boolean foundBooks = false;
+        for (Book book : books) {
+            if (!book.isAvailable() && book.getDueDate().isBefore(LocalDate.now())) {
+                long daysOverdue = ChronoUnit.DAYS.between(book.getDueDate(), LocalDate.now());
+                double fine = daysOverdue * 5; // Assuming a fine of R5 per day for overdue books
+                System.out.println("==============================");
+                System.out.println("- Book: " + book.getTitle());
+                System.out.println("- Borrower: " + book.getBorrower().getName());
+                System.out.println("- Days Overdue: " + (daysOverdue == 0 ? "Today" : daysOverdue));
+                System.out.println("- Fine: R" + fine);
+                foundBooks = true;
+            }
+        }
+        if (!foundBooks) {
+            System.out.println("No overdue or due books found.");
+        }
+    }
+
+    private static boolean isValidEmail(String email) {
+        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+        Pattern pattern = Pattern.compile(emailRegex);
+        Matcher matcher = pattern.matcher(email);
+        return matcher.matches();
+    }
+
+    private static boolean isValidISBN(String isbn) {
+        // ISBN-10 or ISBN-13 validation regex
+        String isbnRegex = "^(?:ISBN(?:-10)?:?\\s)?(?=[0-9X]{10}$|(?=(?:[0-9]+[-\\s]){3})" +
+                "[-\\s0-9X]{13}$|97[89][0-9]{10}$|(?=(?:[0-9]+[-\\s]){4})[-\\s0-9]{17}$)" +
+                "(?:97[89][-\\s]?)?[0-9]{1,5}[-\\s]?[0-9]+[-\\s]?[0-9]+[-\\s]?[0-9X]$";
+        Pattern pattern = Pattern.compile(isbnRegex);
+        Matcher matcher = pattern.matcher(isbn);
+        return matcher.matches();
+    }
+
     private static Member findMemberByName(String name) {
         for (Member member : members) {
             if (member.getName().equalsIgnoreCase(name)) {
@@ -254,7 +328,6 @@ public class Main {
         return null;
     }
 
-    // Method to find a book by title in the books list
     private static Book findBookByTitle(String title) {
         for (Book book : books) {
             if (book.getTitle().equalsIgnoreCase(title)) {
@@ -264,15 +337,23 @@ public class Main {
         return null;
     }
 
-    // Method to validate the format of an email address
-    private static boolean isValidEmail(String email) {
-        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
-        return email.matches(emailRegex);
-    }
-
-    // Method to validate the format of an ISBN
-    private static boolean isValidISBN(String ISBN) {
-        String ISBNRegex = "^\\d{13}$";
-        return ISBN.matches(ISBNRegex);
+    private static void displayOverdueBooks() {
+        System.out.println("Overdue Books:");
+        boolean foundOverdueBooks = false;
+        for (Book book : books) {
+            if (!book.isAvailable() && book.getDueDate().isBefore(LocalDate.now())) {
+                long daysOverdue = ChronoUnit.DAYS.between(book.getDueDate(), LocalDate.now());
+                double fine = daysOverdue * 5; // Assuming a fine of R5 per day for overdue books
+                System.out.println("==============================");
+                System.out.println("- Book: " + book.getTitle());
+                System.out.println("- Borrower: " + book.getBorrower().getName());
+                System.out.println("- Days Overdue: " + (daysOverdue == 0 ? "Today" : daysOverdue));
+                System.out.println("- Fine: R" + fine);
+                foundOverdueBooks = true;
+            }
+        }
+        if (!foundOverdueBooks) {
+            System.out.println("No overdue books found.");
+        }
     }
 }

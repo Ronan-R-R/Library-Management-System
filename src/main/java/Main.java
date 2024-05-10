@@ -1,6 +1,4 @@
 //todo comments
-//todo complete notification system, make system display separately and not with main menu
-//todo refill-in members and books
 import java.util.*;
 import java.io.*;
 import java.time.LocalDate;
@@ -15,7 +13,7 @@ public class Main {
     public static void main(String[] args) {
         loadData(); // Load data from files
         displayOverdueBooks(); // Check for overdue books on first boot
-        displayMenu();
+        //displayMenu();
         saveData(); // Save data to files before exiting
     }
 
@@ -354,6 +352,20 @@ public class Main {
         }
         if (!foundOverdueBooks) {
             System.out.println("No overdue books found.");
+        }
+
+        // Prompt for continue or exit
+        System.out.println("==============================");
+        System.out.println("Continue (1) | Exit (0)");
+        System.out.println("==============================");
+        System.out.print("Enter your choice: ");
+        int choice = scanner.nextInt();
+        scanner.nextLine(); // Consume newline character
+
+        if (choice == 1) {
+            displayMenu(); // Continue to the main menu
+        } else {
+            System.out.println("Exiting the program. Thank you!");
         }
     }
 }

@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The Following project was created with a basic understanding of java, currently a console app to be upgraded with simple GUI and to make use of SQLite, these feature will be implemented or alternatives to be found in the future
+The Following project was created with a basic understanding of java, currently a console app
 
 This is a simple command-line Library Management System implemented in Java. It allows users to manage books and members of a library. The system provides functionalities such as adding new books, adding new members, searching for books by title or author, checking out books, returning books, and viewing lists of books and members.
 
@@ -20,22 +20,19 @@ To set up the Library Management System on your own system, follow these steps:
 
 ## Features
 
-- **Add New Book**: Add new books to the library collection by providing the title, author name, and ISBN.
-
-- **Add New Member**: Register new members to the library by providing their name and email address.
-
-- **Search for Book**: Search for books in the library by title or author. The search is case-sensitive.
-
-- **Check Out Book**: Allow members to check out books from the library. Books must be available to be checked out.
-
-- **Return Book**: Allow members to return books to the library.
-
-- **View Members**: Display a list of all registered members, along with their names, email addresses, and the books they have currently borrowed.
-
-- **View Books**: Display a list of all books in the library collection, along with their titles, authors, ISBNs, and availability status (available or checked out).
+- **Add New Book**: Librarians can add new books to the library's inventory by providing the title, author, and ISBN of the book.
+- **Add New Member**: Librarians can add new members to the library by providing their name and email address.
+- **Search for a Book**: Users can search for books in the library's inventory by title or author.
+- **Check Out a Book**: Librarians can check out books to members, marking them as unavailable until they are returned.
+- **Return a Book**: Members can return books they have borrowed, marking them as available for other members to borrow.
+- **View Members**: Librarians can view a list of all library members along with their information and the number of books they have borrowed.
+- **View Books**: Librarians can view a list of all books in the library's inventory along with their availability status.
+- **Manually Change Due Date**: For testing purposes, librarians can manually change the due date of a book that has been checked out.
+- **View Overdue and Due Books**: Librarians can view a list of overdue and due books along with information about the borrower, days overdue, and any applicable fines.
 
 ## Note
 
 - **Case Sensitivity**: The search functionality for books is case-sensitive. Ensure to enter titles or author names with the correct casing when performing searches, this excludes the search.
-- **Reusability**: in the current version it's simply a basic console app with no form of saving items, this is to be made possible with a future update.
+- **Reusability**: simple console app, too impractical for real world use.
 - **Real World Use**: Not practical or realistic to use, simple app to learn and practice.
+- **Data file**: Do not mess with the data file, noticed it just leads to breaking the code and will require you to complete delete the .dat files and remake them. 

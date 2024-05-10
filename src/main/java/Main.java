@@ -1,15 +1,23 @@
-//todo comments
 import java.util.*;
 import java.io.*;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.regex.*;
 
+/**
+ * Represents a library management system.
+ */
 public class Main {
+    // Lists to store books and members
     private static List<Book> books = new ArrayList<>();
     private static List<Member> members = new ArrayList<>();
+    // Scanner object for user input
     private static Scanner scanner = new Scanner(System.in);
 
+    /**
+     * The main method of the program.
+     * @param args Command-line arguments.
+     */
     public static void main(String[] args) {
         loadData(); // Load data from files
         displayOverdueBooks(); // Check for overdue books on first boot
@@ -17,8 +25,12 @@ public class Main {
         saveData(); // Save data to files before exiting
     }
 
+    // Directory path for storing data files
     private static final String DATA_DIR = "./data/";
 
+    /**
+     * Loads data from files into memory.
+     */
     private static void loadData() {
         try (ObjectInputStream bookInput = new ObjectInputStream(new FileInputStream(DATA_DIR + "books.dat"));
              ObjectInputStream memberInput = new ObjectInputStream(new FileInputStream(DATA_DIR + "members.dat"))) {
@@ -30,6 +42,9 @@ public class Main {
         }
     }
 
+    /**
+     * Saves data from memory to files.
+     */
     private static void saveData() {
         File dataDirectory = new File(DATA_DIR);
         if (!dataDirectory.exists()) {
@@ -49,11 +64,13 @@ public class Main {
         }
     }
 
+    // Display the main menu for the library management system
     private static void displayMenu() {
         int choice = -1; // Initialize choice to a default value
         do {
             try {
                 System.out.println("\nLibrary Management System Menu:");
+                // Display menu options
                 System.out.println("==============================");
                 System.out.println("1. Add a new book");
                 System.out.println("2. Add a new member");
@@ -124,6 +141,7 @@ public class Main {
         } while (choice == 1); // Continue looping if choice is 1
     }
 
+    // Method to add a new book to the library
     private static void addNewBook() {
         System.out.print("Enter book title: ");
         String title = scanner.nextLine();
@@ -141,6 +159,7 @@ public class Main {
         System.out.println("Book added successfully.");
     }
 
+    // Method to add a new member to the library
     private static void addNewMember() {
         System.out.print("Enter member name: ");
         String name = scanner.nextLine();
@@ -159,6 +178,7 @@ public class Main {
         }
     }
 
+    // Method to search for a book by title or author
     private static void searchForBook() {
         System.out.print("Enter search query (title or author): ");
         String query = scanner.nextLine().toLowerCase();
@@ -186,6 +206,7 @@ public class Main {
         }
     }
 
+    // Method to check out a book to a member
     private static void checkOutBook() {
         System.out.print("Enter member name: ");
         String memberName = scanner.nextLine();
@@ -209,6 +230,7 @@ public class Main {
         }
     }
 
+    // Method to return a book to the library
     private static void returnBook() {
         System.out.print("Enter book title: ");
         String bookTitle = scanner.nextLine();
@@ -230,6 +252,7 @@ public class Main {
         }
     }
 
+    // Method to view all members in the library
     private static void viewMembers() {
         System.out.println("Members:");
         if (members.isEmpty()) {
@@ -244,6 +267,7 @@ public class Main {
         }
     }
 
+    // Method to view all books in the library
     private static void viewBooks() {
         System.out.println("Books:");
         if (books.isEmpty()) {
@@ -262,6 +286,7 @@ public class Main {
         }
     }
 
+    // Method to manually change the due date of a book
     private static void manuallyChangeDueDate() {
         System.out.print("Enter book title: ");
         String bookTitle = scanner.nextLine();
@@ -280,6 +305,7 @@ public class Main {
         System.out.println("Due date updated successfully.");
     }
 
+    // Method to view overdue and due books
     private static void viewOverdueAndDueBooks() {
         System.out.println("Overdue and Due Books:");
         boolean foundBooks = false;
@@ -300,6 +326,7 @@ public class Main {
         }
     }
 
+    // Method to validate email format
     private static boolean isValidEmail(String email) {
         String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
         Pattern pattern = Pattern.compile(emailRegex);
@@ -307,6 +334,7 @@ public class Main {
         return matcher.matches();
     }
 
+    // Method to validate ISBN format
     private static boolean isValidISBN(String isbn) {
         // ISBN-10 or ISBN-13 validation regex
         String isbnRegex = "^(?:ISBN(?:-10)?:?\\s)?(?=[0-9X]{10}$|(?=(?:[0-9]+[-\\s]){3})" +
@@ -317,6 +345,7 @@ public class Main {
         return matcher.matches();
     }
 
+    // Method to find a member by name
     private static Member findMemberByName(String name) {
         for (Member member : members) {
             if (member.getName().equalsIgnoreCase(name)) {
@@ -326,6 +355,7 @@ public class Main {
         return null;
     }
 
+    // Method to find a book by title
     private static Book findBookByTitle(String title) {
         for (Book book : books) {
             if (book.getTitle().equalsIgnoreCase(title)) {
@@ -335,6 +365,7 @@ public class Main {
         return null;
     }
 
+    // Method to display overdue books when the program starts
     private static void displayOverdueBooks() {
         System.out.println("Overdue Books:");
         boolean foundOverdueBooks = false;
